@@ -1,0 +1,24 @@
+{
+    "name": "eriocnemis/module-downloadable-import-export",
+    "description": "The extension allows you to fully export downloadable type products",
+    "type": "magento2-module",
+    "version": "100.0.1",
+    "authors": [{
+        "name": "Eriocnemis Team",
+        "email": "dev.eriocnemis@gmail.com"
+    }],
+    "license": [
+        "OSL-3.0"
+    ],
+    "require": {
+        "magento/module-downloadable-import-export": "100.0.*|100.1.*|100.2.*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Eriocnemis\\DownloadableImportExport\\": ""
+        }
+    }
+}

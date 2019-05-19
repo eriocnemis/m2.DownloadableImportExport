@@ -1,0 +1,1 @@
+It is known that when exporting, magento 2 does not fill in specific fields for downloadable type products. This module solves this problem.
