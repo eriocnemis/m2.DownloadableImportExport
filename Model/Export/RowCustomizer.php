@@ -6,7 +6,7 @@
 namespace Eriocnemis\DownloadableImportExport\Model\Export;
 
 use \Magento\CatalogImportExport\Model\Export\RowCustomizerInterface;
-use \Magento\Catalog\Api\Data\ProductInterface;
+use \Magento\Catalog\Model\Product;
 use \Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use \Magento\ImportExport\Model\Import as ImportModel;
 use \Magento\Downloadable\Api\Data\LinkInterface;
@@ -71,7 +71,7 @@ class RowCustomizer implements RowCustomizerInterface
      *
      * @param ProductCollection $collection
      * @param int[] $productIds
-     * @return void
+     * @return $this
      */
     public function prepareData($collection, $productIds)
     {
@@ -92,12 +92,14 @@ class RowCustomizer implements RowCustomizerInterface
     protected function populateProductData(ProductCollection $collection)
     {
         foreach ($collection as $product) {
+            /** @var Type $productType */
+            $productType = $product->getTypeInstance();
             /* populate links data */
-            if ($product->getTypeInstance()->hasLinks($product)) {
+            if ($productType->hasLinks($product)) {
                 $this->populateLinkData($product);
             }
             /* populate samples data */
-            if ($product->getTypeInstance()->hasSamples($product)) {
+            if ($productType->hasSamples($product)) {
                 $this->populateSampleData($product);
             }
         }
@@ -107,13 +109,15 @@ class RowCustomizer implements RowCustomizerInterface
     /**
      * Populate links data
      *
-     * @param ProductInterface $product
+     * @param Product $product
      * @return $this
      */
-    protected function populateLinkData(ProductInterface $product)
+    protected function populateLinkData(Product $product)
     {
         $links = [];
-        foreach ($product->getTypeInstance()->getLinks($product) as $link) {
+        /** @var Type $productType */
+        $productType = $product->getTypeInstance();
+        foreach ($productType->getLinks($product) as $link) {
             $option = array_merge(
                 $this->prepareLinkData($product, $link),
                 $this->prepareAdditionalLinkData($link)
@@ -129,13 +133,15 @@ class RowCustomizer implements RowCustomizerInterface
     /**
      * Populate sample data
      *
-     * @param ProductInterface $product
+     * @param Product $product
      * @return $this
      */
-    protected function populateSampleData(ProductInterface $product)
+    protected function populateSampleData(Product $product)
     {
         $samples = [];
-        foreach ($product->getTypeInstance()->getSamples($product) as $sample) {
+        /** @var Type $productType */
+        $productType = $product->getTypeInstance();
+        foreach ($productType->getSamples($product) as $sample) {
             $option = array_merge(
                 $this->prepareSampleData($product, $sample),
                 $this->prepareAdditionalSampleData($sample)
@@ -171,15 +177,15 @@ class RowCustomizer implements RowCustomizerInterface
     /**
      * Prepare link options
      *
-     * @param ProductInterface $product
+     * @param Product $product
      * @param LinkInterface $link
      * @return array
      */
-    public function prepareLinkData(ProductInterface $product, LinkInterface $link)
+    public function prepareLinkData(Product $product, LinkInterface $link)
     {
         return [
-            'group_title' => $product->getLinksTitle(),
-            'purchased_separately' => $product->getLinksPurchasedSeparately(),
+            'group_title' => $product->getData('links_title'),
+            'purchased_separately' => $product->getData('links_purchased_separately'),
             'title' => $link->getTitle()
         ];
     }
@@ -195,7 +201,7 @@ class RowCustomizer implements RowCustomizerInterface
         return  array_merge(
             $this->preparePrice($link),
             $this->prepareDownloads($link),
-            $this->prepareSortOrder($link),
+            $this->prepareLinkSortOrder($link),
             $this->prepareShareable($link),
             $this->prepareLink($link),
             $this->prepareLinkSample($link)
@@ -234,14 +240,14 @@ class RowCustomizer implements RowCustomizerInterface
     /**
      * Prepare sample options
      *
-     * @param ProductInterface $product
+     * @param Product $product
      * @param SampleInterface $sample
      * @return array
      */
-    public function prepareSampleData(ProductInterface $product, SampleInterface $sample)
+    public function prepareSampleData(Product $product, SampleInterface $sample)
     {
         return [
-            'group_title' => $product->getSamplesTitle(),
+            'group_title' => $product->getData('samples_title'),
             'title' => $sample->getTitle()
         ];
     }
@@ -255,7 +261,7 @@ class RowCustomizer implements RowCustomizerInterface
     public function prepareAdditionalSampleData(SampleInterface $sample)
     {
         return  array_merge(
-            $this->prepareSortOrder($sample),
+            $this->prepareSampleSortOrder($sample),
             $this->prepareSample($sample)
         );
     }
@@ -271,6 +277,19 @@ class RowCustomizer implements RowCustomizerInterface
         return $sample->getSampleType() == 'file'
             ? ['file' => $sample->getSampleFile()]
             : ['url' => $sample->getSampleUrl()];
+    }
+
+    /**
+     * Prepare sample sort order option
+     *
+     * @param SampleInterface $sample
+     * @return array
+     */
+    protected function prepareSampleSortOrder(SampleInterface $sample)
+    {
+        return $sample->getSortOrder() > self::DEFAULT_SORT_ORDER
+            ? ['sortorder' => $sample->getSortOrder()]
+            : [];
     }
 
     /**
@@ -313,12 +332,12 @@ class RowCustomizer implements RowCustomizerInterface
     }
 
     /**
-     * Prepare sort order option
+     * Prepare link sort order option
      *
-     * @param ComponentInterface $link
+     * @param LinkInterface $link
      * @return array
      */
-    protected function prepareSortOrder(ComponentInterface $link)
+    protected function prepareLinkSortOrder(LinkInterface $link)
     {
         return $link->getSortOrder() > self::DEFAULT_SORT_ORDER
             ? ['sortorder' => $link->getSortOrder()]
@@ -356,7 +375,7 @@ class RowCustomizer implements RowCustomizerInterface
      *
      * @param array $additionalRowsCount
      * @param int $productId
-     * @return array
+     * @return array|int
      */
     public function getAdditionalRowsCount($additionalRowsCount, $productId)
     {
