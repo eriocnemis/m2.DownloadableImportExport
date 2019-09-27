@@ -5,14 +5,14 @@
  */
 namespace Eriocnemis\DownloadableImportExport\Model\Export;
 
-use \Magento\CatalogImportExport\Model\Export\RowCustomizerInterface;
-use \Magento\Catalog\Model\Product;
-use \Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
-use \Magento\ImportExport\Model\Import as ImportModel;
-use \Magento\Downloadable\Api\Data\LinkInterface;
-use \Magento\Downloadable\Api\Data\SampleInterface;
-use \Magento\Downloadable\Model\ComponentInterface;
-use \Magento\Downloadable\Model\Product\Type;
+use Magento\CatalogImportExport\Model\Export\RowCustomizerInterface;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
+use Magento\ImportExport\Model\Import as ImportModel;
+use Magento\Downloadable\Api\Data\LinkInterface;
+use Magento\Downloadable\Api\Data\SampleInterface;
+use Magento\Downloadable\Model\ComponentInterface;
+use Magento\Downloadable\Model\Product\Type;
 
 /**
  * Downloadable row customizer
